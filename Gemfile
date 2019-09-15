@@ -27,6 +27,7 @@ gem 'scenic', '~> 1.3'
 gem 'sucker_punch', '~> 2.0'
 gem 'twitter'
 gem 'uglifier', '>= 1.3.0'
+gem 'figaro'
 
 group :development do
   gem 'brakeman', require: false
@@ -37,7 +38,6 @@ end
 
 group :development, :test do
   gem 'factory_girl_rails'
-  gem 'figaro'
   gem 'pry-rails'
   gem 'pry-byebug'
   gem 'rspec-rails'
