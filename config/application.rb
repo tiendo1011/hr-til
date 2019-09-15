@@ -6,7 +6,7 @@ Bundler.require(*Rails.groups)
 
 module HrTil
   class Application < Rails::Application
-    config.active_record.schema_format = :sql
+    config.active_record.schema_format = :ruby
     config.autoload_paths << Rails.root.join('lib')
     config.time_zone = 'Eastern Time (US & Canada)'
 
