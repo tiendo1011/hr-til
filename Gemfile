@@ -4,6 +4,7 @@ ruby '2.3.3'
 
 gem 'rails', '~> 5.x'
 
+gem 'rspec_junit_formatter'
 gem 'active_model_serializers'
 # gem 'airbrake'
 gem 'authem'
