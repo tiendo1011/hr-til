@@ -2,15 +2,17 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 9.5.5
--- Dumped by pg_dump version 9.6.1
+-- Dumped from database version 10.10 (Ubuntu 10.10-0ubuntu0.18.04.1)
+-- Dumped by pg_dump version 10.10 (Ubuntu 10.10-0ubuntu0.18.04.1)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
 SET idle_in_transaction_session_timeout = 0;
 SET client_encoding = 'UTF8';
 SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
 SET check_function_bodies = false;
+SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
@@ -28,8 +30,6 @@ CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
 COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
 
 
-SET search_path = public, pg_catalog;
-
 SET default_tablespace = '';
 
 SET default_with_oids = false;
@@ -38,7 +38,7 @@ SET default_with_oids = false;
 -- Name: ar_internal_metadata; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE ar_internal_metadata (
+CREATE TABLE public.ar_internal_metadata (
     key character varying NOT NULL,
     value character varying,
     created_at timestamp without time zone NOT NULL,
@@ -50,11 +50,11 @@ CREATE TABLE ar_internal_metadata (
 -- Name: authem_sessions; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE authem_sessions (
+CREATE TABLE public.authem_sessions (
     id integer NOT NULL,
     role character varying NOT NULL,
-    subject_id integer NOT NULL,
     subject_type character varying NOT NULL,
+    subject_id integer NOT NULL,
     token character varying(60) NOT NULL,
     expires_at timestamp without time zone NOT NULL,
     ttl integer NOT NULL,
@@ -67,7 +67,8 @@ CREATE TABLE authem_sessions (
 -- Name: authem_sessions_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
-CREATE SEQUENCE authem_sessions_id_seq
+CREATE SEQUENCE public.authem_sessions_id_seq
+    AS integer
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -79,14 +80,14 @@ CREATE SEQUENCE authem_sessions_id_seq
 -- Name: authem_sessions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
-ALTER SEQUENCE authem_sessions_id_seq OWNED BY authem_sessions.id;
+ALTER SEQUENCE public.authem_sessions_id_seq OWNED BY public.authem_sessions.id;
 
 
 --
 -- Name: channels; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE channels (
+CREATE TABLE public.channels (
     id integer NOT NULL,
     name text NOT NULL,
     created_at timestamp without time zone NOT NULL,
@@ -100,7 +101,8 @@ CREATE TABLE channels (
 -- Name: channels_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
-CREATE SEQUENCE channels_id_seq
+CREATE SEQUENCE public.channels_id_seq
+    AS integer
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -112,14 +114,14 @@ CREATE SEQUENCE channels_id_seq
 -- Name: channels_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
-ALTER SEQUENCE channels_id_seq OWNED BY channels.id;
+ALTER SEQUENCE public.channels_id_seq OWNED BY public.channels.id;
 
 
 --
 -- Name: developers; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE developers (
+CREATE TABLE public.developers (
     id integer NOT NULL,
     email character varying NOT NULL,
     username character varying NOT NULL,
@@ -136,7 +138,7 @@ CREATE TABLE developers (
 -- Name: posts; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE posts (
+CREATE TABLE public.posts (
     id integer NOT NULL,
     developer_id integer NOT NULL,
     body text NOT NULL,
@@ -157,7 +159,7 @@ CREATE TABLE posts (
 -- Name: hot_posts; Type: VIEW; Schema: public; Owner: -
 --
 
-CREATE VIEW hot_posts AS
+CREATE VIEW public.hot_posts AS
  WITH posts_with_age AS (
          SELECT posts.id,
             posts.developer_id,
@@ -170,8 +172,8 @@ CREATE VIEW hot_posts AS
             posts.likes,
             posts.tweeted,
             posts.published_at,
-            GREATEST((date_part('epoch'::text, (now() - posts.published_at)) / (3600)::double precision), (0.1)::double precision) AS hour_age
-           FROM posts
+            GREATEST((date_part('epoch'::text, (CURRENT_TIMESTAMP - posts.published_at)) / (3600)::double precision), (0.1)::double precision) AS hour_age
+           FROM public.posts
           WHERE (posts.published_at IS NOT NULL)
         )
  SELECT ((posts_with_age.likes)::double precision / (posts_with_age.hour_age ^ (0.8)::double precision)) AS score,
@@ -195,22 +197,22 @@ CREATE VIEW hot_posts AS
 -- Name: developer_scores; Type: VIEW; Schema: public; Owner: -
 --
 
-CREATE VIEW developer_scores AS
+CREATE VIEW public.developer_scores AS
  SELECT developers.id,
     developers.username,
     stats.posts,
     stats.likes,
     round(((stats.likes)::numeric / (stats.posts)::numeric), 2) AS avg_likes,
     round(log((2)::numeric, ((((1022)::double precision * ((developer_scores.score - min(developer_scores.score) OVER ()) / (max(developer_scores.score) OVER () - min(developer_scores.score) OVER ()))) + (2)::double precision))::numeric), 1) AS hotness
-   FROM ((developers
+   FROM ((public.developers
      JOIN ( SELECT hot_posts.developer_id AS id,
             sum(hot_posts.score) AS score
-           FROM hot_posts
+           FROM public.hot_posts
           GROUP BY hot_posts.developer_id) developer_scores USING (id))
      JOIN ( SELECT posts.developer_id AS id,
             count(*) AS posts,
             sum(posts.likes) AS likes
-           FROM posts
+           FROM public.posts
           GROUP BY posts.developer_id) stats USING (id));
 
 
@@ -218,7 +220,8 @@ CREATE VIEW developer_scores AS
 -- Name: developers_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
-CREATE SEQUENCE developers_id_seq
+CREATE SEQUENCE public.developers_id_seq
+    AS integer
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -230,14 +233,15 @@ CREATE SEQUENCE developers_id_seq
 -- Name: developers_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
-ALTER SEQUENCE developers_id_seq OWNED BY developers.id;
+ALTER SEQUENCE public.developers_id_seq OWNED BY public.developers.id;
 
 
 --
 -- Name: posts_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
-CREATE SEQUENCE posts_id_seq
+CREATE SEQUENCE public.posts_id_seq
+    AS integer
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -249,14 +253,14 @@ CREATE SEQUENCE posts_id_seq
 -- Name: posts_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
-ALTER SEQUENCE posts_id_seq OWNED BY posts.id;
+ALTER SEQUENCE public.posts_id_seq OWNED BY public.posts.id;
 
 
 --
 -- Name: schema_migrations; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE schema_migrations (
+CREATE TABLE public.schema_migrations (
     version character varying NOT NULL
 );
 
@@ -265,35 +269,35 @@ CREATE TABLE schema_migrations (
 -- Name: authem_sessions id; Type: DEFAULT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY authem_sessions ALTER COLUMN id SET DEFAULT nextval('authem_sessions_id_seq'::regclass);
+ALTER TABLE ONLY public.authem_sessions ALTER COLUMN id SET DEFAULT nextval('public.authem_sessions_id_seq'::regclass);
 
 
 --
 -- Name: channels id; Type: DEFAULT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY channels ALTER COLUMN id SET DEFAULT nextval('channels_id_seq'::regclass);
+ALTER TABLE ONLY public.channels ALTER COLUMN id SET DEFAULT nextval('public.channels_id_seq'::regclass);
 
 
 --
 -- Name: developers id; Type: DEFAULT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY developers ALTER COLUMN id SET DEFAULT nextval('developers_id_seq'::regclass);
+ALTER TABLE ONLY public.developers ALTER COLUMN id SET DEFAULT nextval('public.developers_id_seq'::regclass);
 
 
 --
 -- Name: posts id; Type: DEFAULT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY posts ALTER COLUMN id SET DEFAULT nextval('posts_id_seq'::regclass);
+ALTER TABLE ONLY public.posts ALTER COLUMN id SET DEFAULT nextval('public.posts_id_seq'::regclass);
 
 
 --
 -- Name: ar_internal_metadata ar_internal_metadata_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY ar_internal_metadata
+ALTER TABLE ONLY public.ar_internal_metadata
     ADD CONSTRAINT ar_internal_metadata_pkey PRIMARY KEY (key);
 
 
@@ -301,7 +305,7 @@ ALTER TABLE ONLY ar_internal_metadata
 -- Name: authem_sessions authem_sessions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY authem_sessions
+ALTER TABLE ONLY public.authem_sessions
     ADD CONSTRAINT authem_sessions_pkey PRIMARY KEY (id);
 
 
@@ -309,7 +313,7 @@ ALTER TABLE ONLY authem_sessions
 -- Name: channels channels_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY channels
+ALTER TABLE ONLY public.channels
     ADD CONSTRAINT channels_pkey PRIMARY KEY (id);
 
 
@@ -317,7 +321,7 @@ ALTER TABLE ONLY channels
 -- Name: developers developers_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY developers
+ALTER TABLE ONLY public.developers
     ADD CONSTRAINT developers_pkey PRIMARY KEY (id);
 
 
@@ -325,15 +329,23 @@ ALTER TABLE ONLY developers
 -- Name: posts posts_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY posts
+ALTER TABLE ONLY public.posts
     ADD CONSTRAINT posts_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: schema_migrations schema_migrations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.schema_migrations
+    ADD CONSTRAINT schema_migrations_pkey PRIMARY KEY (version);
 
 
 --
 -- Name: posts unique_slug; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY posts
+ALTER TABLE ONLY public.posts
     ADD CONSTRAINT unique_slug UNIQUE (slug);
 
 
@@ -341,51 +353,44 @@ ALTER TABLE ONLY posts
 -- Name: index_authem_sessions_on_expires_at_and_token; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX index_authem_sessions_on_expires_at_and_token ON authem_sessions USING btree (expires_at, token);
+CREATE UNIQUE INDEX index_authem_sessions_on_expires_at_and_token ON public.authem_sessions USING btree (expires_at, token);
 
 
 --
 -- Name: index_authem_sessions_subject; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX index_authem_sessions_subject ON authem_sessions USING btree (expires_at, subject_type, subject_id);
+CREATE INDEX index_authem_sessions_subject ON public.authem_sessions USING btree (expires_at, subject_type, subject_id);
 
 
 --
 -- Name: index_posts_on_channel_id; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX index_posts_on_channel_id ON posts USING btree (channel_id);
+CREATE INDEX index_posts_on_channel_id ON public.posts USING btree (channel_id);
 
 
 --
 -- Name: index_posts_on_developer_id; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX index_posts_on_developer_id ON posts USING btree (developer_id);
+CREATE INDEX index_posts_on_developer_id ON public.posts USING btree (developer_id);
 
 
 --
--- Name: unique_schema_migrations; Type: INDEX; Schema: public; Owner: -
+-- Name: posts fk_rails_06b7a0db99; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX unique_schema_migrations ON schema_migrations USING btree (version);
-
-
---
--- Name: posts fk_rails_447dc2e0a3; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY posts
-    ADD CONSTRAINT fk_rails_447dc2e0a3 FOREIGN KEY (channel_id) REFERENCES channels(id);
+ALTER TABLE ONLY public.posts
+    ADD CONSTRAINT fk_rails_06b7a0db99 FOREIGN KEY (channel_id) REFERENCES public.channels(id);
 
 
 --
--- Name: posts fk_rails_b3ec63b3ac; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: posts fk_rails_2c578d8f8f; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY posts
-    ADD CONSTRAINT fk_rails_b3ec63b3ac FOREIGN KEY (developer_id) REFERENCES developers(id);
+ALTER TABLE ONLY public.posts
+    ADD CONSTRAINT fk_rails_2c578d8f8f FOREIGN KEY (developer_id) REFERENCES public.developers(id);
 
 
 --
