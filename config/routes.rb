@@ -1,5 +1,7 @@
 Rails.application.routes.draw do
-  default_url_options host: ENV.fetch('host'), protocol: ENV.fetch('protocol')
+  unless ENV["CI"]
+    default_url_options host: ENV.fetch('host'), protocol: ENV.fetch('protocol')
+  end
 
   unless Rails.env.production?
     namespace 'ui' do
