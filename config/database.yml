@@ -16,8 +16,8 @@ cucumber:
 
 staging:
   <<: *default
-  database: hr-til_development
+  database: hr-til_staging
 
 production:
   <<: *default
-  database: hr-til_development
+  database: hr-til_production
