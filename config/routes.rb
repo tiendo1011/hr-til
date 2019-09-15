@@ -1,5 +1,5 @@
 Rails.application.routes.draw do
-  unless ENV["CI"]
+  unless ENV["CI"] or ENV["DEPLOYING"]
     default_url_options host: ENV.fetch('host'), protocol: ENV.fetch('protocol')
   end
 
