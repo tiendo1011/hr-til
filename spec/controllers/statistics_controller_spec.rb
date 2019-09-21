@@ -21,8 +21,8 @@ describe StatisticsController do
 
   describe '#posts_per_day' do
     it 'returns labels and counts for our post activity' do
-      yesterday = Date.today - 10.minutes
-      today = Date.today + 10.minutes
+      yesterday = Date.current - 10.minutes
+      today = Date.current + 10.minutes
 
       FactoryGirl.create_list(:post, 3, published_at: yesterday)
       FactoryGirl.create_list(:post, 5, published_at: today)

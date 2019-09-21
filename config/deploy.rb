@@ -27,7 +27,7 @@ set :linked_files, %w(config/application.yml config/secrets.yml config/database.
 # append :linked_dirs, "log", "tmp/pids", "tmp/cache", "tmp/sockets", "public/system"
 
 # Default value for default_env is {}
-set :default_env, { "DEPLOYING" => 1 }
+# set :default_env, { "DEPLOYING" => 1 }
 
 # Default value for local_user is ENV['USER']
 # set :local_user, -> { `git config user.name`.chomp }
