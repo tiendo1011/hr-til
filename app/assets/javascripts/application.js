@@ -24,4 +24,4 @@
 //= require syntax_label
 //= require til
 //= require easter
-//= require register_sw
+// require register_sw
