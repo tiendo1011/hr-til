@@ -21,8 +21,8 @@ describe StatisticsController do
 
   describe '#posts_per_day' do
     it 'returns labels and counts for our post activity' do
-      yesterday = Date.current - 10.minutes
-      today = Date.current + 10.minutes
+      yesterday = Date.today - 10.minutes
+      today = Date.today + 10.minutes
 
       FactoryGirl.create_list(:post, 3, published_at: yesterday)
       FactoryGirl.create_list(:post, 5, published_at: today)
@@ -33,7 +33,7 @@ describe StatisticsController do
         case struct.label
         when yesterday.strftime("%a, %b %-e")
           expect(struct.count).to eq 3
-        when yesterday.strftime("%a, %b %-e")
+        when today.strftime("%a, %b %-e")
           expect(struct.count).to eq 5
         end
       end
