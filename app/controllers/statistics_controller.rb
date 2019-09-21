@@ -52,6 +52,7 @@ class StatisticsController < ApplicationController
   end
 
   def find_posts_per_day
+    #TODO this yell a wrong result, need to re-work
     sql = <<-SQL
       with posts as (
            select date((published_at at time zone 'Asia/Bangkok')::timestamptz) as post_date
