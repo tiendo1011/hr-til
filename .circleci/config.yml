@@ -62,3 +62,27 @@ jobs: # a collection of steps
       - store_test_results: # Upload test results for display in Test Summary: https://circleci.com/docs/2.0/collect-test-data/
           path: test_results
       # See https://circleci.com/docs/2.0/deployment-integrations/ for example deploy configs
+  deploy-job:
+    docker:
+      - image: circleci/ruby:2.3.3-node
+    working_directory: ~/repo
+    steps:
+      - checkout
+      - run:
+          name: Bundle Install
+          command: bundle check || bundle install
+      - run:
+          name: Deploy if tests pass and branch is master
+          command: bundle exec cap production deploy
+
+workflows:
+  version: 2
+  build-deploy:
+    jobs:
+      - build-job
+      - deploy-job:
+          requires:
+            - build-job
+          filters:
+            branches:
+              only: master
