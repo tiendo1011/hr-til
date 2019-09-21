@@ -34,11 +34,6 @@ group :development do
   gem 'bullet'
   gem 'phil'
   gem 'spring'
-  gem "capistrano", "~> 3.11", require: false
-  gem "capistrano-rails", "~> 1.4", require: false
-  gem 'capistrano-rbenv', '~> 2.1'
-  gem 'capistrano-nvm', require: false
-  gem 'capistrano-passenger'
 end
 
 group :development, :test do
@@ -46,6 +41,11 @@ group :development, :test do
   gem 'pry-rails'
   gem 'pry-byebug'
   gem 'rspec-rails'
+  gem "capistrano", "~> 3.11", require: false
+  gem "capistrano-rails", "~> 1.4", require: false
+  gem 'capistrano-rbenv', '~> 2.1'
+  gem 'capistrano-nvm', require: false
+  gem 'capistrano-passenger'
 end
 
 group :production do
